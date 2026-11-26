@@ -1,0 +1,46 @@
+services:
+  # PHP FPM Service
+  php:
+    image: wodby/php:5
+    volumes:
+      - './:/var/www/html'
+
+  # Nginx Service
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - './:/var/www/html'
+      - './docker:/etc/nginx/conf.d'
+    depends_on:
+      - php
+      - mariadb
+
+  # MariaDB Service
+  mariadb:
+    image: mariadb:latest
+    environment:
+      MYSQL_DATABASE: '${DB_NAME}'
+      MYSQL_USER: '${DB_USERNAME}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_ROOT_PASSWORD: '${DB_ROOT_PASSWORD}'
+    volumes:
+      - db_data:/var/lib/mysql
+    # ports:
+    #   - "3356:3306"
+
+  # phpMyAdmin Service
+  phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      - mariadb
+    environment:
+      PMA_HOST: '${DB_HOST:-mariadb}'
+      PMA_USER: '${DB_USERNAME}'
+      PMA_PASSWORD: '${DB_PASSWORD}'
+
+volumes:
+  db_data:
